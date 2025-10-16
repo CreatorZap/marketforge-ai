@@ -1,0 +1,42 @@
+# ============================================
+# TEMPLATE DE VARIÁVEIS DE AMBIENTE
+# ============================================
+# 
+# INSTRUÇÕES:
+# 1. Copie este conteúdo
+# 2. Crie um arquivo chamado .env.local na raiz do projeto
+# 3. Cole este conteúdo no .env.local
+# 4. Substitua os valores de exemplo pelas suas chaves reais
+#
+# ============================================
+
+# Supabase - Banco de Dados
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ...
+
+# OpenAI - Inteligência Artificial
+OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# App - Configurações da Aplicação
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# ============================================
+# ONDE CONSEGUIR CADA CHAVE:
+# ============================================
+#
+# SUPABASE:
+# 1. Acesse: https://supabase.com/dashboard
+# 2. Selecione seu projeto
+# 3. Vá em Settings → API
+# 4. Copie:
+#    - Project URL → NEXT_PUBLIC_SUPABASE_URL
+#    - anon public → NEXT_PUBLIC_SUPABASE_ANON_KEY
+#    - service_role → SUPABASE_SERVICE_ROLE_KEY
+#
+# OPENAI:
+# 1. Acesse: https://platform.openai.com/api-keys
+# 2. Clique em "Create new secret key"
+# 3. Copie a chave → OPENAI_API_KEY
+#
+# ============================================
