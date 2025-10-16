@@ -1,8 +1,13 @@
 import Link from 'next/link';
 import { ArrowRight, Sparkles, FileText, FileCheck } from 'lucide-react';
+import Header from '@/components/layout/Header';
 
 export default function Home() {
   return (
+    <>
+      <Header />
+      <div className="pt-16">
+        
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-purple-900 scroll-smooth">
       {/* Hero Section */}
       <section className="relative flex items-center justify-center px-4 pt-20 pb-12">
@@ -33,24 +38,25 @@ export default function Home() {
           </p>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-            <Link 
-              href="/projects/new"
-              className="group bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-bold py-4 px-8 rounded-lg hover:shadow-2xl hover:shadow-yellow-500/50 transition-all duration-300 hover:scale-105 flex items-center gap-2"
-            >
-              <Sparkles className="w-5 h-5" />
-              Criar Meu Primeiro Projeto Grátis
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-
-            <a 
-              href="#como-funciona"
-              className="bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold py-4 px-8 rounded-lg hover:bg-white/20 transition-all duration-300 inline-block"
-            >
-              Ver Exemplo Real
-            </a>
-          </div>
-
+<div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+  {/* Botão 1: CTA Principal */}
+  <Link 
+    href="/projects/new"
+    className="group bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-bold py-4 px-8 rounded-lg hover:shadow-2xl hover:shadow-yellow-500/50 transition-all duration-300 hover:scale-105 flex items-center gap-2"
+  >
+    <Sparkles className="w-5 h-5" />
+    Criar Meu Primeiro Projeto
+    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+  </Link>
+  
+  {/* Botão 2: Ver Exemplo */}
+  <a 
+    href="#como-funciona"
+    className="bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold py-4 px-8 rounded-lg hover:bg-white/20 transition-all duration-300 inline-block"
+  >
+    Ver Exemplo Real
+  </a>
+</div>
           {/* Stats */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-white/80 text-sm">
             <div className="flex items-center gap-2">
@@ -456,7 +462,7 @@ export default function Home() {
               className="group bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-bold py-4 px-8 rounded-lg hover:shadow-2xl hover:shadow-yellow-500/50 transition-all duration-300 hover:scale-105 flex items-center gap-2"
             >
               <Sparkles className="w-5 h-5" />
-              Criar Meu Projeto Grátis Agora
+              Criar Meu Projeto Agora
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
 
@@ -497,5 +503,7 @@ export default function Home() {
         </div>
       </footer>
     </div>
+    </div>
+    </>
   );
 }
