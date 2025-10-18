@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { toast } from 'sonner'
-import { Loader2, ArrowLeft, ArrowRight, Sparkles, AlertCircle } from 'lucide-react'
+import { Loader2, ArrowLeft, ArrowRight, Sparkles, AlertCircle, FileText, FileCheck, Copy, Download } from 'lucide-react'
+import { createProject } from '@/lib/supabase/projects'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -90,6 +92,9 @@ export function ProjectWizard() {
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES[0].text)
   const [errors, setErrors] = useState<Partial<Record<keyof ProjectWizardData, string>>>({})
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const [generatedResult, setGeneratedResult] = useState<any>(null)
   
   const [formData, setFormData] = useState<ProjectWizardData>({
     projectName: '',
@@ -164,7 +169,7 @@ export function ProjectWizard() {
     }
   }
 
-  // Gerar projeto (VERSÃO TEMPORÁRIA - sem Supabase)
+  // Gerar projeto e salvar no Supabase
   const handleGenerate = async () => {
     // Validar todos os campos
     const validation = ProjectWizardSchema.safeParse(formData)
@@ -180,6 +185,7 @@ export function ProjectWizard() {
       return
     }
 
+    const startTime = Date.now()
     setIsGenerating(true)
     setLoadingProgress(0)
     
@@ -388,13 +394,54 @@ ${formData.niche}
 **Mitigação:** Infraestrutura escalável e automação`
       }
       
-      // Salvar no localStorage
+      // Salvar resultado para exibição
+      setGeneratedResult(mockResult)
+      
+      // Salvar no localStorage (backup)
       localStorage.setItem('marketforge_latest_project', JSON.stringify(mockResult))
       
       toast.success('Projeto gerado com sucesso!', { id: 'generating' })
       
-      // Redirecionar para página de sucesso (sem banco de dados)
-      router.push('/projects/success')
+      // Salvar no banco de dados Supabase
+      setSaving(true)
+      setSaveError('')
+      setLoadingMessage('💾 Salvando projeto no banco de dados...')
+
+      try {
+        const endTime = Date.now()
+        const generationTime = Math.round((endTime - startTime) / 1000)
+
+        const projectData = {
+          name: formData.projectName,
+          niche: formData.niche,
+          audience: formData.audience,
+          features: formData.features,
+          platform: formData.platform,
+          goal: formData.goal,
+          design_style: formData.designStyle,
+          generated_prompt: mockResult.prompt,
+          generated_prd: mockResult.prd,
+          generated_research: mockResult.research,
+          tokens_used: 0,
+          generation_time: generationTime,
+        }
+
+        const { data, error } = await createProject(projectData)
+
+        if (error) {
+          setSaveError(error)
+          toast.error(`Erro ao salvar: ${error}`)
+        } else {
+          toast.success('✅ Projeto salvo com sucesso!')
+        }
+      } catch (error: any) {
+        const errorMsg = error.message || 'Erro ao salvar projeto'
+        setSaveError(errorMsg)
+        toast.error(`Erro ao salvar: ${errorMsg}`)
+      } finally {
+        setSaving(false)
+        setIsGenerating(false)
+      }
       
     } catch (error: any) {
       console.error('Erro na geração:', error)
@@ -447,6 +494,19 @@ ${formData.niche}
                 </p>
               </div>
 
+              {/* Mensagens de salvamento */}
+              {saving && (
+                <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg animate-pulse">
+                  <p className="text-blue-700 dark:text-blue-400 font-semibold">💾 Salvando projeto...</p>
+                </div>
+              )}
+
+              {saveError && (
+                <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg">
+                  <p className="text-red-700 dark:text-red-400">❌ Erro ao salvar: {saveError}</p>
+                </div>
+              )}
+
               {/* Skeleton cards */}
               <div className="grid grid-cols-3 gap-4 pt-4">
                 {[1, 2, 3].map((i) => (
@@ -459,6 +519,206 @@ ${formData.niche}
             </div>
           </CardContent>
         </Card>
+      </div>
+    )
+  }
+
+  // Results screen
+  if (generatedResult) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-purple-900 p-4">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
+            <h1 className="text-3xl font-bold text-white">Projeto Gerado com Sucesso! 🎉</h1>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setGeneratedResult(null)
+                  setCurrentStep(1)
+                  setFormData({
+                    projectName: '',
+                    niche: '',
+                    audience: '',
+                    features: '',
+                    platform: 'bolt',
+                    goal: '',
+                    designStyle: 'moderno'
+                  })
+                }}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all"
+              >
+                ← Novo Projeto
+              </button>
+              <Link
+                href="/dashboard"
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all"
+              >
+                Ir para Dashboard →
+              </Link>
+            </div>
+          </div>
+
+          {/* Results Cards */}
+          <div className="space-y-6">
+            {/* Prompt */}
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-purple-600" />
+                  Prompt Gerado
+                </h3>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedResult.prompt)
+                      toast.success('Prompt copiado!')
+                    }}
+                    className="px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg text-sm flex items-center gap-2 transition-all"
+                  >
+                    <Copy className="w-4 h-4" />
+                    Copiar
+                  </button>
+                  <button
+                    onClick={() => {
+                      const blob = new Blob([generatedResult.prompt], { type: 'text/markdown' })
+                      const url = URL.createObjectURL(blob)
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = `${generatedResult.projectName || 'projeto'}-prompt.md`
+                      a.click()
+                      URL.revokeObjectURL(url)
+                      toast.success('Prompt baixado!')
+                    }}
+                    className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm flex items-center gap-2 transition-all"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download
+                  </button>
+                </div>
+              </div>
+              <textarea
+                value={generatedResult.prompt}
+                onChange={(e) => setGeneratedResult({...generatedResult, prompt: e.target.value})}
+                className="w-full h-48 p-4 border border-gray-300 rounded-lg font-mono text-sm resize-y"
+              />
+            </Card>
+
+            {/* PRD */}
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-blue-600" />
+                  Product Requirements Document (PRD)
+                </h3>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedResult.prd)
+                      toast.success('PRD copiado!')
+                    }}
+                    className="px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg text-sm flex items-center gap-2 transition-all"
+                  >
+                    <Copy className="w-4 h-4" />
+                    Copiar
+                  </button>
+                  <button
+                    onClick={() => {
+                      const blob = new Blob([generatedResult.prd], { type: 'text/markdown' })
+                      const url = URL.createObjectURL(blob)
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = `${generatedResult.projectName || 'projeto'}-prd.md`
+                      a.click()
+                      URL.revokeObjectURL(url)
+                      toast.success('PRD baixado!')
+                    }}
+                    className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm flex items-center gap-2 transition-all"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download
+                  </button>
+                </div>
+              </div>
+              <textarea
+                value={generatedResult.prd}
+                onChange={(e) => setGeneratedResult({...generatedResult, prd: e.target.value})}
+                className="w-full h-64 p-4 border border-gray-300 rounded-lg text-sm resize-y"
+              />
+            </Card>
+
+            {/* Research */}
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <FileCheck className="w-5 h-5 text-green-600" />
+                  Pesquisa de Mercado
+                </h3>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedResult.research)
+                      toast.success('Research copiado!')
+                    }}
+                    className="px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg text-sm flex items-center gap-2 transition-all"
+                  >
+                    <Copy className="w-4 h-4" />
+                    Copiar
+                  </button>
+                  <button
+                    onClick={() => {
+                      const blob = new Blob([generatedResult.research], { type: 'text/markdown' })
+                      const url = URL.createObjectURL(blob)
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = `${generatedResult.projectName || 'projeto'}-research.md`
+                      a.click()
+                      URL.revokeObjectURL(url)
+                      toast.success('Research baixado!')
+                    }}
+                    className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm flex items-center gap-2 transition-all"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download
+                  </button>
+                </div>
+              </div>
+              <textarea
+                value={generatedResult.research}
+                onChange={(e) => setGeneratedResult({...generatedResult, research: e.target.value})}
+                className="w-full h-64 p-4 border border-gray-300 rounded-lg text-sm resize-y"
+              />
+            </Card>
+
+            {/* Action Buttons */}
+            <div className="flex justify-center gap-4 flex-wrap">
+              <button
+                onClick={() => {
+                  const content = `# PROMPT\n\n${generatedResult.prompt}\n\n# PRD\n\n${generatedResult.prd}\n\n# RESEARCH\n\n${generatedResult.research}`
+                  const blob = new Blob([content], { type: 'text/markdown' })
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement('a')
+                  a.href = url
+                  a.download = `${generatedResult.projectName || 'projeto'}.md`
+                  a.click()
+                  URL.revokeObjectURL(url)
+                  toast.success('Arquivo baixado com sucesso!')
+                }}
+                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all flex items-center gap-2"
+              >
+                <FileText className="w-5 h-5" />
+                Baixar Markdown
+              </button>
+              <Link
+                href="/dashboard"
+                className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all flex items-center gap-2"
+              >
+                <FileCheck className="w-5 h-5" />
+                Ver no Dashboard
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
