@@ -26,6 +26,18 @@ import type { GenerateProjectRequest, GenerateProjectResponse } from '@/types'
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
   
+  // 🔍 DEBUG: Verificar variáveis de ambiente
+  console.log('=== DEBUG OPENAI API KEY ===')
+  console.log('NODE_ENV:', process.env.NODE_ENV)
+  console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY)
+  console.log('OPENAI_API_KEY length:', process.env.OPENAI_API_KEY?.length || 0)
+  console.log('OPENAI_API_KEY starts with sk-:', process.env.OPENAI_API_KEY?.startsWith('sk-') || false)
+  console.log('OPENAI_API_KEY first 10 chars:', process.env.OPENAI_API_KEY?.substring(0, 10) || 'undefined')
+  console.log('OPENAI_API_KEY last 10 chars:', process.env.OPENAI_API_KEY?.substring(-10) || 'undefined')
+  console.log('All env vars with OPENAI:', Object.keys(process.env).filter(key => key.includes('OPENAI')))
+  console.log('All env vars with API:', Object.keys(process.env).filter(key => key.includes('API')))
+  console.log('================================')
+  
   try {
     
     // ==========================================

@@ -40,6 +40,15 @@ export class OpenAIProvider {
    * Se não existir, lança erro para avisar o desenvolvedor
    */
   constructor() {
+    // 🔍 DEBUG: Verificar API Key no construtor
+    console.log('=== DEBUG OPENAI PROVIDER ===')
+    console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY)
+    console.log('OPENAI_API_KEY length:', process.env.OPENAI_API_KEY?.length || 0)
+    console.log('OPENAI_API_KEY starts with sk-:', process.env.OPENAI_API_KEY?.startsWith('sk-') || false)
+    console.log('OPENAI_API_KEY first 10 chars:', process.env.OPENAI_API_KEY?.substring(0, 10) || 'undefined')
+    console.log('OPENAI_API_KEY last 10 chars:', process.env.OPENAI_API_KEY?.substring(-10) || 'undefined')
+    console.log('================================')
+    
     if (!process.env.OPENAI_API_KEY) {
       throw new Error(
         '❌ OPENAI_API_KEY não configurada! Adicione no arquivo .env.local'

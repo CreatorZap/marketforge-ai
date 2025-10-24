@@ -83,6 +83,13 @@ export async function generateProject(
   const startTime = Date.now()
   const timestamp = new Date().toISOString()
   
+  // 🔍 DEBUG: Verificar OpenAI API Key na engine
+  console.log('=== DEBUG ENGINE OPENAI ===')
+  console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY)
+  console.log('OPENAI_API_KEY length:', process.env.OPENAI_API_KEY?.length || 0)
+  console.log('OPENAI_API_KEY starts with sk-:', process.env.OPENAI_API_KEY?.startsWith('sk-') || false)
+  console.log('================================')
+  
   console.log('🚀 Iniciando geração de projeto:', data.projectName)
   console.log('📊 Plano do usuário:', userPlan)
   
