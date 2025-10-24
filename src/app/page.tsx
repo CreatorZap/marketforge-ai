@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, Sparkles, FileText, FileCheck } from 'lucide-react';
+import { ArrowRight, Sparkles, FileText, FileCheck, Check } from 'lucide-react';
 import Header from '@/components/layout/Header';
 
 export default function Home() {
@@ -340,6 +340,185 @@ export default function Home() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Seção: Planos e Preços */}
+      <section className="relative py-16 px-4" id="pricing">
+        <div className="max-w-7xl mx-auto">
+          {/* Título da Seção */}
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              💎 Escolha Seu Plano
+            </h2>
+            <p className="text-xl text-white/80 max-w-2xl mx-auto">
+              Comece grátis e faça upgrade quando quiser
+            </p>
+          </div>
+
+          {/* Grid de Planos */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            {/* FREE */}
+            <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-gray-200 hover:shadow-xl transition-all">
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Free</h3>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold text-gray-900">R$ 0</span>
+                  <span className="text-gray-600">/mês</span>
+                </div>
+              </div>
+              
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">3 projetos/mês</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Todas as ferramentas básicas</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Suporte por email</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Login com Google</span>
+                </li>
+              </ul>
+              
+              <Link 
+                href="/auth/signup"
+                className="block w-full text-center px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-all"
+              >
+                Começar Grátis
+              </Link>
+            </div>
+
+            {/* STARTER */}
+            <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-purple-500 relative hover:shadow-2xl transition-all transform hover:scale-105">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-purple-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                Mais Popular
+              </div>
+              
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Starter</h3>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold text-gray-900">R$ 97</span>
+                  <span className="text-gray-600">/mês</span>
+                </div>
+              </div>
+              
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700"><strong>30 projetos/mês</strong> (1 por dia!)</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Contratos + Propostas</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Export PDF Premium</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Suporte prioritário</span>
+                </li>
+              </ul>
+              
+              <Link 
+                href="https://pay.kiwify.com.br/1ekenIY"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full text-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl"
+              >
+                Assinar Starter →
+              </Link>
+            </div>
+
+            {/* PRO */}
+            <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-gray-200 hover:shadow-xl transition-all">
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Pro</h3>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold text-gray-900">R$ 197</span>
+                  <span className="text-gray-600">/mês</span>
+                </div>
+              </div>
+              
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700"><strong>Projetos ILIMITADOS</strong></span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Tudo do Starter</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">API Access</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Templates premium</span>
+                </li>
+              </ul>
+              
+              <Link 
+                href="https://pay.kiwify.com.br/e5HpFT0"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full text-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl"
+              >
+                Assinar Pro →
+              </Link>
+            </div>
+
+            {/* LIFETIME */}
+            <div className="bg-gradient-to-br from-purple-900 to-blue-900 rounded-2xl p-8 shadow-xl text-white hover:shadow-2xl transition-all transform hover:scale-105">
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold mb-2">Lifetime</h3>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold">R$ 997</span>
+                  <span className="text-purple-200">/único</span>
+                </div>
+                <p className="text-sm text-purple-200 mt-1">Pagamento único</p>
+              </div>
+              
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
+                  <span>Tudo do Pro</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
+                  <span><strong>Vitalício</strong> (paga 1x, usa sempre)</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
+                  <span>500 créditos bônus</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
+                  <span>Badge &quot;Founder&quot; 🏆</span>
+                </li>
+              </ul>
+              
+              <Link 
+                href="https://pay.kiwify.com.br/J3OG1QU"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full text-center px-6 py-3 bg-white text-purple-900 hover:bg-purple-50 rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl border-2 border-white/20"
+              >
+                Tornar-se Founder 🏆
+              </Link>
+            </div>
+
           </div>
         </div>
       </section>

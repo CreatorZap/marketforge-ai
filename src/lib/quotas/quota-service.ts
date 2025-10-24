@@ -10,6 +10,23 @@ import { createClient } from '@/lib/supabase/server'
 export type QuotaType = 'projects' | 'proposals' | 'contracts'
 
 /**
+ * Constantes dos planos e limites
+ */
+export const PLAN_LIMITS = {
+  free: 3,
+  starter: 30,
+  pro: 999999, // "ilimitado"
+  lifetime: 999999
+} as const
+
+export const PLAN_PRICES = {
+  free: 0,
+  starter: 97,
+  pro: 197,
+  lifetime: 997
+} as const
+
+/**
  * Status da quota do usuário
  * 
  * Contém todas as informações sobre o uso e limites
@@ -25,23 +42,30 @@ export interface QuotaStatus {
 /**
  * Serviço de Quotas - Controla limites de uso
  * 
- * O MarketForge tem 3 planos:
+ * O MarketForge tem 4 planos:
  * 
- * 1. STARTER (Gratuito)
- *    - 10 projetos/mês
- *    - 3 propostas/mês
- *    - 1 contrato/mês
+ * 1. FREE (Grátis)
+ *    - 3 projetos/mês
+ *    - Todas as ferramentas básicas
+ *    - Suporte por email
  * 
- * 2. PRO (Pago)
- *    - Projetos ilimitados
- *    - Propostas ilimitadas
- *    - Contratos ilimitados
+ * 2. STARTER (R$ 97/mês)
+ *    - 30 projetos/mês (1 por dia!)
+ *    - Contratos + Propostas
+ *    - Export PDF Premium
+ *    - Suporte prioritário
  * 
- * 3. LIFETIME (Pagamento único)
- *    - Projetos ilimitados
- *    - Propostas ilimitadas
- *    - Contratos ilimitados
+ * 3. PRO (R$ 197/mês)
+ *    - Projetos ILIMITADOS
+ *    - Tudo do Starter
+ *    - API Access
+ *    - Templates premium
+ * 
+ * 4. LIFETIME (R$ 997 pagamento único)
+ *    - Tudo do Pro
+ *    - Vitalício (paga 1x, usa sempre)
  *    - 500 créditos bônus
+ *    - Badge "Founder"
  * 
  * Este serviço garante que:
  * - Usuários não ultrapassem seus limites
@@ -107,22 +131,17 @@ export class QuotaService {
     
     
     // ==========================================
-    // PASSO 3: Determinar colunas do banco
+    // PASSO 3: Determinar limite do plano
     // ==========================================
     
     // Tabela user_quotas tem:
-    // - monthly_projects_limit
-    // - monthly_proposals_limit
-    // - monthly_contracts_limit
-    // - projects_used
-    // - proposals_used
-    // - contracts_used
+    // - plan: 'free' | 'starter' | 'pro' | 'lifetime'
+    // - projects_limit: limite de projetos
+    // - projects_used: projetos já usados
     
-    const limitColumn = `monthly_${type}_limit` as keyof typeof quota
-    const usedColumn = `${type}_used` as keyof typeof quota
-    
-    const limit = quota[limitColumn] as number
-    const used = quota[usedColumn] as number
+    const plan = quota.plan || 'free'
+    const limit = PLAN_LIMITS[plan as keyof typeof PLAN_LIMITS] || 3
+    const used = quota.projects_used || 0
     
     
     // ==========================================

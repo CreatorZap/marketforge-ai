@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Download, Copy, Edit3, Check, FileText } from 'lucide-react';
-import jsPDF from 'jspdf';
+import { toast } from 'sonner';
 
 interface DocumentPreviewProps {
   content: string;
@@ -17,189 +17,248 @@ export default function DocumentPreview({ content, type, onDownload }: DocumentP
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(editedContent);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      // Método 1: Clipboard API (moderno)
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(editedContent);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+        toast.success('✅ Conteúdo copiado com sucesso!');
+      } else {
+        // Método 2: Fallback para navegadores antigos
+        const textArea = document.createElement('textarea');
+        textArea.value = editedContent;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+          const successful = document.execCommand('copy');
+          if (successful) {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+            toast.success('✅ Conteúdo copiado com sucesso!');
+          } else {
+            throw new Error('Falha ao executar comando de cópia');
+          }
+        } catch (err) {
+          console.error('Erro no fallback de cópia:', err);
+          toast.error('❌ Erro ao copiar. Tente selecionar e copiar manualmente (Ctrl+C)');
+        } finally {
+          document.body.removeChild(textArea);
+        }
+      }
     } catch (error) {
       console.error('Erro ao copiar:', error);
+      toast.error('❌ Erro ao copiar. Use Ctrl+C ou Cmd+C para copiar manualmente.');
     }
   };
 
   const handleDownloadMarkdown = () => {
-    const blob = new Blob([editedContent], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${type === 'proposal' ? 'proposta' : 'contrato'}-${Date.now()}.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    onDownload(editedContent);
+    try {
+      const blob = new Blob([editedContent], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${type === 'proposal' ? 'proposta' : 'contrato'}-${Date.now()}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      onDownload(editedContent);
+      toast.success('✅ Arquivo Markdown baixado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao baixar Markdown:', error);
+      toast.error('❌ Erro ao baixar arquivo Markdown.');
+    }
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     try {
+      // Importação dinâmica do jsPDF para evitar problemas com SSR
+      const { default: jsPDF } = await import('jspdf');
+      
       const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4',
+        format: 'a4'
       });
-
-      // Configurações
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 20;
-      const maxWidth = pageWidth - (margin * 2);
-      let yPosition = margin;
-
+      
+      // Configurações de layout
+      const marginLeft = 20;
+      const marginTop = 25;
+      const pageWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const marginRight = 20;
+      const marginBottom = 25;
+      const maxWidth = pageWidth - marginLeft - marginRight;
+      
+      let y = marginTop;
+      
       // Função para adicionar nova página se necessário
-      const checkPageBreak = (lineHeight: number) => {
-        if (yPosition + lineHeight > pageHeight - margin) {
+      const checkNewPage = (spaceNeeded: number) => {
+        if (y + spaceNeeded > pageHeight - marginBottom) {
           doc.addPage();
-          yPosition = margin;
+          y = marginTop;
         }
       };
-
-      // Processar cada linha
+      
+      // Processar markdown linha por linha
       const lines = editedContent.split('\n');
       
-      lines.forEach((line) => {
-        // Remover markdown
-        let cleanLine = line.replace(/\*\*/g, '');
+      for (const line of lines) {
+        // Verificar tipo de linha
         
-        // Headers H1 (#)
+        // Título H1 (# )
         if (line.startsWith('# ')) {
-          checkPageBreak(15);
+          checkNewPage(15);
           doc.setFontSize(18);
           doc.setFont('helvetica', 'bold');
-          const text = cleanLine.replace('# ', '');
-          const textLines = doc.splitTextToSize(text, maxWidth);
-          textLines.forEach((textLine: string) => {
-            doc.text(textLine, pageWidth / 2, yPosition, { align: 'center' });
-            yPosition += 8;
+          const text = line.substring(2).trim();
+          const wrapped = doc.splitTextToSize(text, maxWidth);
+          wrapped.forEach((l: string) => {
+            doc.text(l, marginLeft, y);
+            y += 8;
           });
-          yPosition += 5;
+          y += 5; // Espaço extra após H1
         }
-        // Headers H2 (##)
+        // Título H2 (## )
         else if (line.startsWith('## ')) {
-          checkPageBreak(12);
+          checkNewPage(12);
           doc.setFontSize(14);
           doc.setFont('helvetica', 'bold');
-          const text = cleanLine.replace('## ', '');
-          const textLines = doc.splitTextToSize(text, maxWidth);
-          textLines.forEach((textLine: string) => {
-            doc.text(textLine, margin, yPosition);
-            yPosition += 7;
+          const text = line.substring(3).trim();
+          const wrapped = doc.splitTextToSize(text, maxWidth);
+          wrapped.forEach((l: string) => {
+            doc.text(l, marginLeft, y);
+            y += 7;
           });
-          yPosition += 3;
+          y += 4; // Espaço extra após H2
         }
-        // Headers H3 (###)
+        // Título H3 (### )
         else if (line.startsWith('### ')) {
-          checkPageBreak(10);
+          checkNewPage(10);
           doc.setFontSize(12);
           doc.setFont('helvetica', 'bold');
-          const text = cleanLine.replace('### ', '');
-          const textLines = doc.splitTextToSize(text, maxWidth);
-          textLines.forEach((textLine: string) => {
-            doc.text(textLine, margin, yPosition);
-            yPosition += 6;
+          const text = line.substring(4).trim();
+          const wrapped = doc.splitTextToSize(text, maxWidth);
+          wrapped.forEach((l: string) => {
+            doc.text(l, marginLeft, y);
+            y += 6;
           });
-          yPosition += 2;
+          y += 3; // Espaço extra após H3
         }
-        // Linha horizontal (---)
-        else if (line.trim() === '---') {
-          checkPageBreak(5);
+        // Separador (--- ou ***)
+        else if (line.trim() === '---' || line.trim() === '***') {
+          checkNewPage(5);
+          doc.setLineWidth(0.5);
           doc.setDrawColor(200, 200, 200);
-          doc.line(margin, yPosition, pageWidth - margin, yPosition);
-          yPosition += 5;
-        }
-        // Lista com bullet (-)
-        else if (line.trim().startsWith('- ')) {
-          checkPageBreak(6);
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          const text = cleanLine.replace(/^- /, '• ');
-          const textLines = doc.splitTextToSize(text, maxWidth - 5);
-          textLines.forEach((textLine: string) => {
-            doc.text(textLine, margin + 5, yPosition);
-            yPosition += 5;
-          });
-        }
-        // Lista numerada
-        else if (line.trim().match(/^\d+\./)) {
-          checkPageBreak(6);
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          const textLines = doc.splitTextToSize(cleanLine, maxWidth - 5);
-          textLines.forEach((textLine: string) => {
-            doc.text(textLine, margin + 5, yPosition);
-            yPosition += 5;
-          });
+          doc.line(marginLeft, y, pageWidth - marginRight, y);
+          y += 8;
         }
         // Linha vazia
         else if (line.trim() === '') {
-          yPosition += 3;
+          y += 3;
         }
-        // Texto com negrito (**...**)
-        else if (line.includes('**')) {
-          checkPageBreak(6);
-          doc.setFontSize(10);
-          
-          // Detectar se é header de dados (centralizar)
-          if (line.startsWith('**') && line.endsWith('**')) {
-            doc.setFont('helvetica', 'bold');
-            const text = cleanLine.replace(/\*\*/g, '');
-            const textLines = doc.splitTextToSize(text, maxWidth);
-            textLines.forEach((textLine: string) => {
-              doc.text(textLine, pageWidth / 2, yPosition, { align: 'center' });
-              yPosition += 5;
-            });
-          } else {
-            // Mistura de bold e normal - simplificar para normal com negrito inline
-            doc.setFont('helvetica', 'normal');
-            const textLines = doc.splitTextToSize(cleanLine, maxWidth);
-            textLines.forEach((textLine: string) => {
-              doc.text(textLine, margin, yPosition);
-              yPosition += 5;
-            });
-          }
-        }
-        // Texto normal
-        else if (line.trim() !== '') {
-          checkPageBreak(6);
+        // Lista (a), b), c), etc)
+        else if (/^[a-e]\)/.test(line.trim())) {
+          checkNewPage(7);
           doc.setFontSize(10);
           doc.setFont('helvetica', 'normal');
-          const textLines = doc.splitTextToSize(cleanLine, maxWidth);
-          textLines.forEach((textLine: string) => {
-            doc.text(textLine, margin, yPosition);
-            yPosition += 5;
+          const text = line.trim();
+          const wrapped = doc.splitTextToSize(text, maxWidth - 5);
+          wrapped.forEach((l: string, index: number) => {
+            doc.text(l, index === 0 ? marginLeft + 3 : marginLeft + 8, y);
+            y += 5;
           });
         }
-      });
-
+        // Lista numerada (1., 2., etc)
+        else if (/^\d+\./.test(line.trim())) {
+          checkNewPage(7);
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          const text = line.trim();
+          const wrapped = doc.splitTextToSize(text, maxWidth - 5);
+          wrapped.forEach((l: string, index: number) => {
+            doc.text(l, index === 0 ? marginLeft + 3 : marginLeft + 8, y);
+            y += 5;
+          });
+        }
+        // Texto com negrito (**texto**)
+        else if (line.includes('**')) {
+          checkNewPage(7);
+          doc.setFontSize(10);
+          
+          // Processar negrito inline
+          const parts = line.split('**');
+          let currentX = marginLeft;
+          const lineY = y;
+          
+          parts.forEach((part, index) => {
+            if (index % 2 === 0) {
+              // Texto normal
+              doc.setFont('helvetica', 'normal');
+            } else {
+              // Texto em negrito
+              doc.setFont('helvetica', 'bold');
+            }
+            
+            if (part.trim()) {
+              const wrapped = doc.splitTextToSize(part, maxWidth - (currentX - marginLeft));
+              wrapped.forEach((l: string, wIndex: number) => {
+                if (wIndex > 0) {
+                  y += 5;
+                  currentX = marginLeft;
+                }
+                doc.text(l, currentX, y);
+                currentX += doc.getTextWidth(l);
+              });
+            }
+          });
+          
+          y += 6;
+        }
+        // Texto normal (parágrafo)
+        else if (line.trim()) {
+          checkNewPage(7);
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          const text = line.trim();
+          const wrapped = doc.splitTextToSize(text, maxWidth);
+          wrapped.forEach((l: string) => {
+            doc.text(l, marginLeft, y);
+            y += 5;
+          });
+          y += 2; // Pequeno espaço entre parágrafos
+        }
+      }
+      
       // Adicionar rodapé em todas as páginas
-      const totalPages = doc.getNumberOfPages();
+      const totalPages = doc.internal.pages.length - 1; // -1 porque a primeira página é vazia
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
         doc.setFontSize(8);
-        doc.setFont('helvetica', 'italic');
+        doc.setFont('helvetica', 'normal');
         doc.setTextColor(150, 150, 150);
         doc.text(
-          `Página ${i} de ${totalPages}`,
+          `Página ${i} de ${totalPages} - Gerado por MarketForge em ${new Date().toLocaleDateString('pt-BR')}`,
           pageWidth / 2,
           pageHeight - 10,
           { align: 'center' }
         );
       }
-
+      
       // Salvar PDF
-      const filename = `${type === 'proposal' ? 'proposta' : 'contrato'}-${Date.now()}.pdf`;
-      doc.save(filename);
-      onDownload(editedContent);
+      const fileName = `${type === 'proposal' ? 'proposta' : 'contrato'}-${Date.now()}.pdf`;
+      doc.save(fileName);
+      
+      toast.success('✅ PDF baixado com sucesso!');
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
-      alert('Erro ao gerar PDF. Tente o download em Markdown.');
+      toast.error('❌ Erro ao gerar PDF. Tente baixar como Markdown (.MD)');
     }
   };
 

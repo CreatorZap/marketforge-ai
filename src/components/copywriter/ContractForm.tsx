@@ -7,6 +7,7 @@ import type { ContractData } from '@/lib/prompts/copywriter';
 
 const contractSchema = z.object({
   type: z.enum(['PF', 'PJ']),
+  city: z.string().min(3, 'Cidade deve ter pelo menos 3 caracteres'),
   provider: z.object({
     name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
     document: z.string().min(11, 'CPF/CNPJ inválido'),
@@ -36,6 +37,7 @@ export default function ContractForm({ onSuccess }: ContractFormProps) {
   const [contractType, setContractType] = useState<'PF' | 'PJ'>('PF');
   const [formData, setFormData] = useState<ContractData>({
     type: 'PF',
+    city: '',
     provider: {
       name: '',
       document: '',
@@ -202,6 +204,30 @@ export default function ContractForm({ onSuccess }: ContractFormProps) {
             <div className="text-xs mt-1 opacity-70">CNPJ</div>
           </button>
         </div>
+      </div>
+
+      {/* Cidade do Foro */}
+      <div className="space-y-3">
+        <label htmlFor="city" className="block text-sm font-medium text-gray-700">
+          Cidade do Foro *
+        </label>
+        <input
+          type="text"
+          id="city"
+          name="city"
+          value={formData.city}
+          onChange={handleChange}
+          className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#a855f7] focus:border-transparent transition-all ${
+            errors.city ? 'border-red-500' : 'border-gray-300'
+          }`}
+          placeholder="Ex: São Paulo, Rio de Janeiro, Belo Horizonte"
+        />
+        {errors.city && (
+          <p className="mt-1 text-sm text-red-600">{errors.city}</p>
+        )}
+        <p className="text-xs text-gray-500">
+          Informe a cidade que será usada na cláusula de foro do contrato
+        </p>
       </div>
 
       {/* Dados do Fornecedor */}

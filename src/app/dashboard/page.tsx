@@ -13,10 +13,12 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<any[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
+  const [quota, setQuota] = useState<any>(null);
 
   useEffect(() => {
     checkUser();
     loadProjects();
+    loadQuota();
   }, []);
 
   const checkUser = async () => {
@@ -52,6 +54,29 @@ export default function DashboardPage() {
       console.error('Erro ao carregar projetos:', error);
     } finally {
       setLoadingProjects(false);
+    }
+  };
+
+  const loadQuota = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('user_quotas')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (error) {
+        console.error('Erro ao carregar quota:', error);
+        return;
+      }
+      
+      setQuota(data);
+    } catch (error) {
+      console.error('Erro ao carregar quota:', error);
     }
   };
 
@@ -163,6 +188,82 @@ export default function DashboardPage() {
             </p>
           </Link>
         </div>
+
+        {/* CTA de Upgrade - Mostrar sempre para usuários FREE */}
+        {quota && quota.plan === 'free' && (
+          <div className="mb-8 p-6 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">
+              🚀 Crie mais projetos com Starter!
+            </h3>
+            <p className="text-sm text-gray-700 mb-4">
+              Upgrade para <strong>30 projetos/mês</strong> (1 por dia) + Contratos + Propostas
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link
+                href="https://pay.kiwify.com.br/1ekenIY"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-semibold text-center transition-all"
+              >
+                Starter - R$ 97/mês →
+              </Link>
+              <Link
+                href="https://pay.kiwify.com.br/e5HpFT0"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-center transition-all"
+              >
+                Pro - R$ 197/mês →
+              </Link>
+            </div>
+            <Link
+              href="https://pay.kiwify.com.br/J3OG1QU"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block mt-3 text-center text-sm text-purple-700 hover:text-purple-900 font-semibold"
+            >
+              Ou torne-se Founder (R$ 997 vitalício) →
+            </Link>
+          </div>
+        )}
+
+        {/* CTA quando atingir o limite */}
+        {quota && quota.projects_used >= quota.projects_limit && quota.plan === 'free' && (
+          <div className="mb-8 p-6 bg-red-50 border-2 border-red-200 rounded-xl">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <span className="text-2xl">⚠️</span>
+              </div>
+              <div className="flex-1">
+                <h4 className="text-lg font-bold text-red-900 mb-1">
+                  Limite de projetos atingido!
+                </h4>
+                <p className="text-sm text-red-800 mb-3">
+                  Você usou seus <strong>3 projetos gratuitos</strong> deste mês. 
+                  Faça upgrade para continuar criando projetos incríveis!
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Link
+                    href="https://pay.kiwify.com.br/1ekenIY"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-semibold text-center text-sm"
+                  >
+                    ⚡ Starter - 30 projetos (R$ 97)
+                  </Link>
+                  <Link
+                    href="https://pay.kiwify.com.br/e5HpFT0"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-center text-sm"
+                  >
+                    🚀 Pro - Ilimitado (R$ 197)
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Projetos Section */}
         <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-8">

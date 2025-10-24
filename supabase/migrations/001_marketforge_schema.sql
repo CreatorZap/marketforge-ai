@@ -118,3 +118,20 @@ CREATE TRIGGER set_updated_at_quotas BEFORE UPDATE ON public.user_quotas FOR EAC
 
 DROP TRIGGER IF EXISTS set_updated_at_docs ON public.copywriter_documents;
 CREATE TRIGGER set_updated_at_docs BEFORE UPDATE ON public.copywriter_documents FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+-- ============================================
+-- FUNÇÃO: get_projects_limit
+-- Retorna o limite de projetos baseado no plano
+-- ============================================
+CREATE OR REPLACE FUNCTION public.get_projects_limit(user_plan VARCHAR)
+RETURNS INTEGER AS $$
+BEGIN
+  CASE user_plan
+    WHEN 'free' THEN RETURN 3;
+    WHEN 'starter' THEN RETURN 30;
+    WHEN 'pro' THEN RETURN 999999;  -- "ilimitado"
+    WHEN 'lifetime' THEN RETURN 999999;  -- "ilimitado"
+    ELSE RETURN 3;  -- padrão FREE
+  END CASE;
+END;
+$$ LANGUAGE plpgsql;
