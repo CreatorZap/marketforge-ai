@@ -131,17 +131,39 @@ export class QuotaService {
     
     
     // ==========================================
-    // PASSO 3: Determinar limite do plano
+    // PASSO 3: Determinar limite e uso baseado no tipo
     // ==========================================
     
     // Tabela user_quotas tem:
     // - plan: 'free' | 'starter' | 'pro' | 'lifetime'
-    // - projects_limit: limite de projetos
+    // - monthly_projects_limit: limite de projetos por mês
+    // - monthly_proposals_limit: limite de propostas por mês
+    // - monthly_contracts_limit: limite de contratos por mês
     // - projects_used: projetos já usados
+    // - proposals_used: propostas já usadas
+    // - contracts_used: contratos já usados
     
-    const plan = quota.plan || 'free'
-    const limit = PLAN_LIMITS[plan as keyof typeof PLAN_LIMITS] || 3
-    const used = quota.projects_used || 0
+    // Determinar qual coluna usar baseado no tipo
+    let limit: number
+    let used: number
+    
+    switch (type) {
+      case 'projects':
+        limit = quota.monthly_projects_limit || 3
+        used = quota.projects_used || 0
+        break
+      case 'proposals':
+        limit = quota.monthly_proposals_limit || 3
+        used = quota.proposals_used || 0
+        break
+      case 'contracts':
+        limit = quota.monthly_contracts_limit || 1
+        used = quota.contracts_used || 0
+        break
+      default:
+        limit = 3
+        used = 0
+    }
     
     
     // ==========================================

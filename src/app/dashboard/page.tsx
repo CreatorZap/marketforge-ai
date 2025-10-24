@@ -228,7 +228,7 @@ export default function DashboardPage() {
         )}
 
         {/* CTA quando atingir o limite */}
-        {quota && quota.projects_used >= quota.projects_limit && quota.plan === 'free' && (
+        {quota && quota.projects_used >= quota.monthly_projects_limit && quota.plan === 'free' && (
           <div className="mb-8 p-6 bg-red-50 border-2 border-red-200 rounded-xl">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
