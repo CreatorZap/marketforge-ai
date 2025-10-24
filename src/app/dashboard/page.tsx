@@ -305,19 +305,11 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((project) => {
-                // 🔍 DEBUG - Log do projeto
-                console.log('🔍 [DASHBOARD] Renderizando projeto:', {
-                  id: project.id,
-                  name: project.name,
-                  linkHref: `/projects/${project.id}`
-                });
-                
-                return (
-                  <div
-                    key={project.id}
-                    className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 hover:bg-white/20 transition-all"
-                  >
+              {projects.map((project) => (
+                <div
+                  key={project.id}
+                  className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 hover:bg-white/20 transition-all"
+                >
                   <h3 className="text-xl font-bold text-white mb-2">
                     {project.name}
                   </h3>
@@ -341,21 +333,13 @@ export default function DashboardPage() {
                     </span>
                     <Link
                       href={`/projects/${project.id}`}
-                      onClick={(e) => {
-                        console.log('🔗 [DASHBOARD] Link clicado!');
-                        console.log('ID do projeto:', project.id);
-                        console.log('Href completo:', e.currentTarget.href);
-                        console.log('getAttribute:', e.currentTarget.getAttribute('href'));
-                        console.log('Window location atual:', window.location.href);
-                      }}
                       className="text-purple-400 hover:text-purple-300 text-sm font-medium"
                     >
                       Ver detalhes →
                     </Link>
                   </div>
                 </div>
-                );
-              })}
+              ))}
             </div>
           )}
         </div>

@@ -24,7 +24,7 @@ export default function ProposalPage() {
   };
 
   const handleDownload = (content: string) => {
-    console.log('Download realizado:', content.substring(0, 50) + '...');
+    // Download realizado com sucesso
   };
 
   return (
@@ -34,7 +34,7 @@ export default function ProposalPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link 
-                href="/"
+                href="/dashboard"
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
