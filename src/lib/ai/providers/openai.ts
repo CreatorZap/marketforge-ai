@@ -199,16 +199,29 @@ export class OpenAIProvider {
   }
 }
 
-/**
- * Singleton - Instância única do OpenAIProvider
- * 
- * Por que usar singleton?
- * - Evita criar múltiplas conexões com a OpenAI
- * - Economiza memória
- * - Garante que todos usem a mesma configuração
- * 
- * Como usar em outros arquivos:
- * import { openAIProvider } from '@/lib/ai/providers/openai'
- * const result = await openAIProvider.generate("meu prompt")
- */
-export const openAIProvider = new OpenAIProvider()
+// Lazy Singleton - Instância única do OpenAIProvider (criada sob demanda)
+// Por que lazy initialization?
+// - Não instancia até ser realmente usado
+// - Evita erro "Invalid API key" ao carregar a página
+// - Só cria conexão quando necessário
+let openAIProviderInstance: OpenAIProvider | null = null
+
+function getOpenAIProvider(): OpenAIProvider {
+  if (!openAIProviderInstance) {
+    openAIProviderInstance = new OpenAIProvider()
+  }
+  return openAIProviderInstance
+}
+
+// Mantém a mesma interface para não quebrar código existente
+export const openAIProvider = {
+  generate: async (prompt: string, options?: GenerationOptions) => 
+    getOpenAIProvider().generate(prompt, options),
+  generateWithRetry: async (
+    prompt: string, 
+    options?: GenerationOptions,
+    retries?: number,
+    currentAttempt?: number
+  ) => 
+    getOpenAIProvider().generateWithRetry(prompt, options, retries, currentAttempt)
+}
