@@ -2,10 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { generateProposalPrompt, type ProposalData } from '@/lib/prompts/copywriter';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export async function POST(request: NextRequest) {
   try {
     const data: ProposalData = await request.json();
@@ -17,6 +13,18 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // ✅ LAZY INITIALIZATION: criar cliente OpenAI DENTRO da função
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        { error: 'OPENAI_API_KEY não configurada' },
+        { status: 500 }
+      );
+    }
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
 
     const startTime = Date.now();
 
