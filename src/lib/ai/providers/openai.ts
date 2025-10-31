@@ -40,23 +40,67 @@ export class OpenAIProvider {
    * Se não existir, lança erro para avisar o desenvolvedor
    */
   constructor() {
+    const rawKey = process.env.OPENAI_API_KEY
+    
     // 🔍 DEBUG: Verificar API Key no construtor
     console.log('=== DEBUG OPENAI PROVIDER ===')
-    console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY)
-    console.log('OPENAI_API_KEY length:', process.env.OPENAI_API_KEY?.length || 0)
-    console.log('OPENAI_API_KEY starts with sk-:', process.env.OPENAI_API_KEY?.startsWith('sk-') || false)
-    console.log('OPENAI_API_KEY first 10 chars:', process.env.OPENAI_API_KEY?.substring(0, 10) || 'undefined')
-    console.log('OPENAI_API_KEY last 10 chars:', process.env.OPENAI_API_KEY?.substring(-10) || 'undefined')
+    console.log('OPENAI_API_KEY exists:', !!rawKey)
+    console.log('OPENAI_API_KEY length:', rawKey?.length || 0)
+    console.log('OPENAI_API_KEY starts with sk-:', rawKey?.startsWith('sk-') || false)
+    console.log('OPENAI_API_KEY first 10 chars:', rawKey?.substring(0, 10) || 'undefined')
+    console.log('OPENAI_API_KEY last 10 chars:', rawKey?.substring(rawKey.length - 10) || 'undefined')
     console.log('================================')
     
-    if (!process.env.OPENAI_API_KEY) {
+    // ✅ VALIDAÇÃO: Verificar se a chave existe
+    if (!rawKey) {
       throw new Error(
         '❌ OPENAI_API_KEY não configurada! Adicione no arquivo .env.local'
       )
     }
+    
+    // ✅ VALIDAÇÃO: Limpar whitespace (trim)
+    const apiKey = rawKey.trim()
+    
+    // ✅ VALIDAÇÃO: Verificar formato (deve começar com sk-)
+    if (!apiKey.startsWith('sk-')) {
+      throw new Error(
+        `❌ OPENAI_API_KEY tem formato inválido! Deve começar com 'sk-' (atual: ${apiKey.substring(0, 10)}...)`
+      )
+    }
+    
+    // ✅ VALIDAÇÃO: Verificar tamanho (deve ter entre 40-60 caracteres)
+    if (apiKey.length < 40 || apiKey.length > 60) {
+      throw new Error(
+        `❌ OPENAI_API_KEY tem tamanho inválido! Tamanho: ${apiKey.length} caracteres (esperado: 40-60). Pode estar duplicada ou corrompida.`
+      )
+    }
+    
+    // ✅ VALIDAÇÃO: Verificar se há múltiplas chaves concatenadas
+    const skCount = (apiKey.match(/sk-/g) || []).length
+    if (skCount > 1) {
+      throw new Error(
+        `❌ OPENAI_API_KEY contém ${skCount} chaves concatenadas! Deve ter apenas 1. Verifique a variável no Vercel.`
+      )
+    }
+    
+    // ✅ VALIDAÇÃO: Verificar se há whitespace interno
+    if (/\s/.test(apiKey)) {
+      throw new Error(
+        '❌ OPENAI_API_KEY contém espaços ou quebras de linha! Remova todos os espaços.'
+      )
+    }
+    
+    // ✅ VALIDAÇÃO: Verificar se há aspas
+    if (/["']/.test(apiKey)) {
+      throw new Error(
+        '❌ OPENAI_API_KEY contém aspas! Remova as aspas da variável de ambiente.'
+      )
+    }
+    
+    console.log('✅ OPENAI_API_KEY validada com sucesso!')
 
     this.client = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
+      apiKey: apiKey
     })
   }
 
