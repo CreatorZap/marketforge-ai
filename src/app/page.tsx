@@ -431,9 +431,7 @@ export default function Home() {
               </ul>
               
               <Link 
-                href="https://pay.kiwify.com.br/1ekenIY"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/auth/login?redirect=/pricing&plan=starter"
                 className="block w-full text-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl"
               >
                 Assinar Starter →
@@ -470,9 +468,7 @@ export default function Home() {
               </ul>
               
               <Link 
-                href="https://pay.kiwify.com.br/e5HpFT0"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/auth/login?redirect=/pricing&plan=pro"
                 className="block w-full text-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl"
               >
                 Assinar Pro →
@@ -510,9 +506,7 @@ export default function Home() {
               </ul>
               
               <Link 
-                href="https://pay.kiwify.com.br/J3OG1QU"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/auth/login?redirect=/pricing&plan=lifetime"
                 className="block w-full text-center px-6 py-3 bg-white text-purple-900 hover:bg-purple-50 rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl border-2 border-white/20"
               >
                 Tornar-se Founder 🏆

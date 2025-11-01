@@ -1,7 +1,36 @@
+'use client'
+
 import Link from 'next/link'
 import { Check, ArrowLeft } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 
 export default function PricingPage() {
+  const router = useRouter()
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    checkUser()
+  }, [])
+
+  const checkUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    setUser(user)
+    setLoading(false)
+  }
+
+  const handleUpgrade = (plan: string, kiwifyUrl: string) => {
+    if (!user) {
+      // Redirecionar para login com o plano desejado
+      router.push(`/auth/login?redirect=/pricing&plan=${plan}`)
+      return
+    }
+    
+    // Se está logado, ir direto para Kiwify
+    window.location.href = kiwifyUrl
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-purple-900 py-20 px-4">
       <div className="max-w-7xl mx-auto">
@@ -93,14 +122,12 @@ export default function PricingPage() {
                 <span className="text-gray-700">Suporte prioritário</span>
               </li>
             </ul>
-            <Link
-              href="https://pay.kiwify.com.br/1ekenIY"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full text-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl"
+            <button
+              onClick={() => handleUpgrade('starter', 'https://pay.kiwify.com.br/1ekenIY')}
+              className="w-full text-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl"
             >
-              Assinar Starter →
-            </Link>
+              {loading ? 'Carregando...' : 'Assinar Starter →'}
+            </button>
           </div>
 
           {/* PRO */}
@@ -132,14 +159,12 @@ export default function PricingPage() {
                 <span className="text-gray-700">Suporte via WhatsApp</span>
               </li>
             </ul>
-            <Link
-              href="https://pay.kiwify.com.br/e5HpFT0"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full text-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl"
+            <button
+              onClick={() => handleUpgrade('pro', 'https://pay.kiwify.com.br/e5HpFT0')}
+              className="w-full text-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl"
             >
-              Assinar Pro →
-            </Link>
+              {loading ? 'Carregando...' : 'Assinar Pro →'}
+            </button>
           </div>
 
           {/* LIFETIME */}
@@ -172,14 +197,12 @@ export default function PricingPage() {
                 <span>Acesso antecipado</span>
               </li>
             </ul>
-            <Link
-              href="https://pay.kiwify.com.br/J3OG1QU"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full text-center px-6 py-3 bg-white text-purple-900 hover:bg-purple-50 rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl"
+            <button
+              onClick={() => handleUpgrade('lifetime', 'https://pay.kiwify.com.br/J3OG1QU')}
+              className="w-full text-center px-6 py-3 bg-white text-purple-900 hover:bg-purple-50 rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl"
             >
-              Tornar-se Founder 🏆
-            </Link>
+              {loading ? 'Carregando...' : 'Tornar-se Founder 🏆'}
+            </button>
           </div>
 
         </div>
