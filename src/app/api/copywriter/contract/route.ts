@@ -1,9 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { generateContractPrompt, type ContractData } from '@/lib/prompts/copywriter';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
+    // 🛡️ PROTEÇÃO: Verificar autenticação
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('❌ [CONTRACT API] Tentativa de acesso não autenticado');
+      return NextResponse.json(
+        { error: 'Não autenticado. Faça login para gerar contratos.' },
+        { status: 401 }
+      );
+    }
+
+    console.log('✅ [CONTRACT API] Usuário autenticado:', user.id);
+
     const data: ContractData = await request.json();
 
     // Validação básica
